@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # 3D plotting
 
 # Step 1: Dataset using DataFrame
 data = {
@@ -42,35 +43,35 @@ for i in range(epochs):
         loss = np.mean(error ** 2)
         print(f"Epoch {i}: Loss = {loss:.4f}, m = {[round(val, 4) for val in m]}, b = {b:.4f}")
 
-
-# Step 5: Plotting (before user input)
-plt.figure(figsize=(8, 5))
-
-# Actual marks
-plt.scatter(range(n), y, color='blue', label='Actual Marks')
-
-# Predicted marks from model
-y_all_pred = np.dot(X, m) + b
-plt.plot(range(n), y_all_pred, color='green', linestyle='--', label='Model Prediction')
-
-plt.xlabel("Student Index")
-plt.ylabel("Final Marks")
-plt.title("Actual vs Predicted Final Marks (Before User Input)")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-
-# Final Model Coefficients
+# ✅ Step 4b: Print final coefficients
 print("\n🎯 Final Model Coefficients:")
 for i in range(len(m)):
     print(f"m{i+1}: {m[i]:.4f}")
-
 print(f"b: {b:.4f}")
 
+# Step 5: 3D Plotting
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
 
-# Step 6: User Input for Prediction
+# Actual marks
+ax.scatter(df['StudyHours'], df['SleepHours'], df['PreviousMarks'],
+           c=y, cmap='viridis', s=50, label='Actual Marks')
+
+# Create prediction surface (fix PreviousMarks as mean)
+study_range = np.linspace(df['StudyHours'].min(), df['StudyHours'].max(), 10)
+sleep_range = np.linspace(df['SleepHours'].min(), df['SleepHours'].max(), 10)
+study_grid, sleep_grid = np.meshgrid(study_range, sleep_range)
+
+previous_mean = df['PreviousMarks'].mean()
+X_plane = np.column_stack([study_grid.ravel(), sleep_grid.ravel(), np.full(study_grid.size, previous_mean)])
+X_plane_scaled = (X_plane - X_mean) / X_std
+y_plane = np.dot(X_plane_scaled, m) + b
+y_plane = y_plane.reshape(study_grid.shape)
+
+# Plot model prediction surface
+ax.plot_surface(study_grid, sleep_grid, y_plane, alpha=0.5, color='green')
+
+# Step 6: User input
 try:
     study = float(input("\nEnter study hours: "))
     sleep = float(input("Enter sleep hours: "))
@@ -82,5 +83,15 @@ try:
 
     print(f"\n🎯 Predicted Final Marks: {predicted_marks:.2f} / 100")
 
+    # Plot user prediction in 3D
+    ax.scatter(study, sleep, previous, color='red', s=100, marker='X', label='Your Prediction')
+
 except ValueError:
     print("⚠️ Please enter valid numeric inputs.")
+
+ax.set_xlabel('Study Hours')
+ax.set_ylabel('Sleep Hours')
+ax.set_zlabel('Previous Marks / Final Marks')
+ax.set_title("3D Visualization: Actual Marks, Model Prediction & User Input")
+ax.legend()
+plt.show()
