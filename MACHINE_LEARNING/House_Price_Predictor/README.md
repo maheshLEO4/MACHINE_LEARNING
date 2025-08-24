@@ -87,9 +87,7 @@ docker run -p 5000:5000 house-price-app
 ---
 
 ## ✨ Frontend Screenshot
-```
-![UI](image.png)
-```
+c:\Users\MAHESH\OneDrive\Pictures\Screenshot 2025-08-21 194537.png
 
 ---
 
